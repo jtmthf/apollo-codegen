@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "babel-runtime": "^6.11.6",
-    "source-map-support": "^0.4.2",
+    "source-map-support": "^0.4.6",
     "change-case": "^3.0.0",
     "graphql": "^0.7.0",
     "inflected": "^1.1.7",
