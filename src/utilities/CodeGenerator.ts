@@ -1,48 +1,47 @@
-import {
-  join,
-  wrap,
-} from './printing';
 
 export default class CodeGenerator {
-  constructor(context) {
+  public context: void;
+
+  public scopeStack: void[] = [];
+
+  public startOfIndentLevel?: boolean;
+  public indentWidth = 2;
+  public indentLevel = 0;
+
+  public output = '';
+
+  constructor(context: void) {
     this.context = context;
-
-    this.scopeStack = [];
-
-    this.indentWidth = 2;
-    this.indentLevel = 0;
-
-    this.output = '';
   }
 
-  pushScope(scope) {
+  public pushScope(scope: void) {
     this.scopeStack.push(scope);
   }
 
-  popScope() {
+  public popScope() {
     return this.scopeStack.pop();
   }
 
-  print(maybeString) {
+  public print(maybeString?: string) {
     if (maybeString) {
       this.output += maybeString;
     }
   }
 
-  printNewline() {
+  public printNewline() {
     if (this.output) {
       this.print('\n');
       this.startOfIndentLevel = false;
     }
   }
 
-  printNewlineIfNeeded() {
+  public printNewlineIfNeeded() {
     if (!this.startOfIndentLevel) {
       this.printNewline();
     }
   }
 
-  printOnNewline(maybeString) {
+  public printOnNewline(maybeString?: string) {
     if (maybeString) {
       this.printNewline();
       this.printIndent();
@@ -50,13 +49,15 @@ export default class CodeGenerator {
     }
   }
 
-  printIndent() {
+  public printIndent() {
     const indentation = ' '.repeat(this.indentLevel * this.indentWidth);
     this.output += indentation;
   }
 
-  withIndent(closure) {
-    if (!closure) return;
+  public withIndent(closure?: () => any) {
+    if (!closure) {
+      return;
+    }
 
     this.indentLevel++;
     this.startOfIndentLevel = true;
@@ -64,7 +65,7 @@ export default class CodeGenerator {
     this.indentLevel--;
   }
 
-  withinBlock(closure, open = ' {', close = '}') {
+  public withinBlock(closure?: () => any, open = ' {', close = '}') {
     this.print(open);
     this.withIndent(closure);
     this.printOnNewline(close);

@@ -1,6 +1,5 @@
 import {
   isEqualType,
-  isTypeSubTypeOf,
   isAbstractType,
   SchemaMetaFieldDef,
   TypeMetaFieldDef,
@@ -8,40 +7,52 @@ import {
   GraphQLObjectType,
   GraphQLInterfaceType,
   GraphQLUnionType,
-  GraphQLEnumType
+  GraphQLSchema,
+  GraphQLScalarType,
+  GraphQLEnumType,
+  GraphQLInputObjectType,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLError,
+  OperationDefinitionNode,
+  Location,
+  ASTNode,
+  ValueNode,
+  FieldNode,
 } from 'graphql';
 
-export function sourceAt(location) {
+export function sourceAt(location: Location) {
   return location.source.body.slice(location.start, location.end);
 }
 
-export function filePathForNode(node) {
-  const name = node.loc.source && node.loc.source.name;
-  return (name === "GraphQL") ? undefined : name;
+export function filePathForNode(node: ASTNode) {
+  const name = node.loc && node.loc.source && node.loc.source.name;
+  return (name === 'GraphQL') ? undefined : name;
 }
 
-export function valueFromValueNode(valueNode) {
-  const kind = valueNode.kind;
-
-  if (kind === 'IntValue' || kind === 'FloatValue') {
+export function valueFromValueNode(valueNode: ValueNode): any {
+  if (valueNode.kind === 'IntValue' || valueNode.kind === 'FloatValue') {
     return Number(valueNode.value);
-  } else if (kind === 'NullValue') {
+  } else if (valueNode.kind === 'NullValue') {
     return null;
-  } else if (kind === 'ListValue') {
+  } else if (valueNode.kind === 'ListValue') {
     return valueNode.values.map(valueFromValueNode);
-  } else if (kind === 'ObjectValue') {
+  } else if (valueNode.kind === 'ObjectValue') {
     return valueNode.fields.reduce((object, field) => {
       object[field.name.value] = valueFromValueNode(field.value);
       return object;
     }, {});
-  } else if (kind === 'Variable') {
-    return { kind, variableName: valueNode.name.value };
+  } else if (valueNode.kind === 'Variable') {
+    return { kind: valueNode.kind, variableName: valueNode.name.value };
   } else {
     return valueNode.value;
   }
 }
 
-export function isTypeProperSuperTypeOf(schema, maybeSuperType, subType) {
+type GraphQLTypes = GraphQLScalarType | GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType
+  | GraphQLEnumType | GraphQLInputObjectType | GraphQLList<any> | GraphQLNonNull<any>;
+
+export function isTypeProperSuperTypeOf(schema: GraphQLSchema, maybeSuperType: GraphQLTypes, subType: GraphQLObjectType) {
   return isEqualType(maybeSuperType, subType) || (isAbstractType(maybeSuperType) && schema.isPossibleType(maybeSuperType, subType));
 }
 
@@ -50,7 +61,7 @@ export function isTypeProperSuperTypeOf(schema, maybeSuperType, subType) {
 /**
  * Extracts the root type of the operation from the schema.
  */
-export function getOperationRootType(schema, operation) {
+export function getOperationRootType(schema: GraphQLSchema, operation: OperationDefinitionNode) {
   switch (operation.operation) {
     case 'query':
       return schema.getQueryType();
@@ -59,7 +70,7 @@ export function getOperationRootType(schema, operation) {
       if (!mutationType) {
         throw new GraphQLError(
           'Schema is not configured for mutations',
-          [operation]
+          [operation],
         );
       }
       return mutationType;
@@ -68,14 +79,14 @@ export function getOperationRootType(schema, operation) {
       if (!subscriptionType) {
         throw new GraphQLError(
           'Schema is not configured for subscriptions',
-          [operation]
+          [operation],
         );
       }
       return subscriptionType;
     default:
       throw new GraphQLError(
         'Can only compile queries, mutations and subscriptions',
-        [operation]
+        [operation],
       );
   }
 }
@@ -85,7 +96,7 @@ export function getOperationRootType(schema, operation) {
  * statically evaluated environment we do not always have an Object type,
  * and need to handle Interface and Union types.
  */
-export function getFieldDef(schema, parentType, fieldAST) {
+export function getFieldDef(schema: GraphQLSchema, parentType: GraphQLObjectType, fieldAST: FieldNode) {
   const name = fieldAST.name.value;
   if (name === SchemaMetaFieldDef.name &&
       schema.getQueryType() === parentType) {
