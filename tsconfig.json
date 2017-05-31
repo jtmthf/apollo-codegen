@@ -10,6 +10,8 @@
         "strict": true,
         "noUnusedLocals": true,
         "importHelpers": true,
+        "sourceMap": true,
+        "outDir": "lib",
         "lib": [
             "es2015"
         ],
@@ -19,6 +21,7 @@
     },
     "exclude": [
         "node_modules",
-        "lib"
+        "lib",
+        "test"
     ]
 }

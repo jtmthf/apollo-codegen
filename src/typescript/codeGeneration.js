@@ -37,7 +37,7 @@ import {
 
 export function generateSource(context, options) {
   const generator = new CodeGenerator(context);
-  
+
   generator.printOnNewline('/* tslint:disable */');
   generator.printOnNewline('//  This file was automatically generated and should not be edited.');
 
@@ -102,13 +102,10 @@ function interfaceNameFromOperation({operationName, operationType}) {
   switch (operationType) {
     case 'query':
       return `${pascalCase(operationName)}Query`;
-      break;
     case 'mutation':
       return `${pascalCase(operationName)}Mutation`;
-      break;
     case 'subscription':
       return `${pascalCase(operationName)}Subscription`;
-      break;
     default:
       throw new GraphQLError(`Unsupported operation type "${operationType}"`);
   }

@@ -5,8 +5,8 @@
   "main": "./lib/index.js",
   "bin": "./lib/cli.js",
   "scripts": {
-    "compile": "babel src --out-dir lib --source-maps",
-    "watch": "babel src --out-dir lib --watch --source-maps",
+    "compile": "tsc",
+    "watch": "tsc --watch",
     "prepublish": "rm -rf lib && npm run compile",
     "test": "jest"
   },
