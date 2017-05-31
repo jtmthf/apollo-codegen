@@ -12,6 +12,9 @@
         "importHelpers": true,
         "lib": [
             "es2015"
+        ],
+        "types": [
+            "node"
         ]
     },
     "exclude": [

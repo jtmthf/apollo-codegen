@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@types/graphql": "^0.9.1",
+    "@types/node": "^7.0.22",
     "ansi-regex": "^2.1.1",
     "babel-cli": "^6.24.1",
     "babel-jest": "^20.0.0",
