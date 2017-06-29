@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@types/glob": "^5.0.30",
-    "@types/graphql": "^0.9.1",
+    "@types/graphql": "^0.9.3",
     "@types/inflected": "^1.1.29",
     "@types/mkdirp": "^0.3.29",
     "@types/node-fetch": "^1.6.7",
@@ -32,10 +32,10 @@
     "jest": "^20.0.4",
     "jest-matcher-utils": "^20.0.0",
     "regenerator-runtime": "^0.10.5",
-    "ts-jest": "^20.0.5",
+    "ts-jest": "^20.0.6",
     "tslib": "^1.7.1",
-    "tslint": "^5.3.2",
-    "typescript": "^2.3.4"
+    "tslint": "^5.4.3",
+    "typescript": "^2.4.1"
   },
   "dependencies": {
     "change-case": "^3.0.0",
