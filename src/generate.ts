@@ -15,26 +15,20 @@ export default function generate(
   schemaPath: string,
   outputPath: string | undefined,
   target: TargetType,
+  tagName: string,
   options: any,
 ) {
   const schema = loadSchema(schemaPath);
 
-  const document = loadAndMergeQueryDocuments(inputPaths);
+  const document = loadAndMergeQueryDocuments(inputPaths, tagName);
 
   validateQueryDocument(schema, document, target);
 
   if (target === 'swift') {
-    if (!options.addTypename) {
-      console.warn('This option is a no-op for Swift because __typename is already added automatically');
-    }
     options.addTypename = true;
-    options.mergeInFieldsFromFragmentSpreads = true;
-  } else {
-    if (options.addTypename) {
-      options.addTypename = true;
-    }
-    options.mergeInFieldsFromFragmentSpreads = true;
   }
+
+  options.mergeInFieldsFromFragmentSpreads = true;
 
   const context = compileToIR(schema, document, options);
   Object.assign(context, options);
