@@ -21,7 +21,7 @@ function handleError(error: Error) {
   process.exit(1);
 }
 
-interface IntrospectArgs extends yargs.Argv {
+interface IntrospectArgs {
   schema: string;
   output: string;
   header: {
@@ -30,7 +30,12 @@ interface IntrospectArgs extends yargs.Argv {
   insecure?: boolean;
 }
 
-interface Args extends yargs.Argv {
+interface PrintArgs {
+  schema: string;
+  output: string;
+}
+
+interface GenerateArgs {
   schema: string;
   output?: string;
   target: TargetType;
@@ -39,12 +44,14 @@ interface Args extends yargs.Argv {
   'custom-scalars-prefix': string;
   'add-typename': string;
   input: string[];
+  tagName: string;
 }
 
 // tslint:disable-next-line:no-unused-expression
 yargs
   .command(
-    'introspect-schema <schema>',
+    // TODO: yargs typings to take array
+    ['introspect-schema <schema>', 'download-schema'] as any,
     'Generate an introspection JSON from a local GraphQL file or from a remote GraphQL server',
     {
       output: {
@@ -106,7 +113,7 @@ yargs
         coerce: path.resolve,
       },
     },
-    async argv => {
+    async (argv: PrintArgs) => {
       const { schema, output } = argv;
       await printSchema(schema, output);
     },
@@ -156,11 +163,12 @@ yargs
       },
       'tag-name': {
         demand: false,
+        // tslint:disable-next-line:max-line-length
         describe: 'Name of the template literal tag used to identify template literals containing GraphQL queries in Javascript/Typescript code',
         default: 'gql',
       },
     },
-    (argv: Args) => {
+    (argv: GenerateArgs) => {
       let { input } = argv;
 
       // Use glob if the user's shell was unable to expand the pattern

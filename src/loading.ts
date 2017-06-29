@@ -29,6 +29,7 @@ function extractDocumentFromJavascript(content: string, tagName: string = 'gql')
   let match;
   const matches = [];
 
+  // tslint:disable-next-line:no-conditional-assignment
   while (match = re.exec(content)) {
     const doc = match[1]
       .replace(/\${[^}]*}/g, '');

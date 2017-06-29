@@ -45,7 +45,8 @@ function serializeEnumType(type: GraphQLEnumType) {
       {
         name: value.name,
         description: value.description,
-        isDeprecated: value.isDeprecated,
+        // TODO: Fix graphql typings to handle isDeprecated
+        isDeprecated: (value as any).isDeprecated,
         deprecationReason: value.deprecationReason,
       }
     )),

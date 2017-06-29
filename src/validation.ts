@@ -1,20 +1,26 @@
 import {
   validate,
   specifiedRules,
+  // TODO: graphql typings
   NoUnusedFragments,
-  GraphQLError
+  GraphQLError,
+  GraphQLSchema,
+  DocumentNode,
+  OperationDefinitionNode,
+  FieldNode,
 } from 'graphql';
 
-import { ToolError, logError } from './errors'
+import { Context, TargetType } from'./generate';
+import { ToolError, logError } from './errors';
 
-export function validateQueryDocument(schema, document, target) {
+export function validateQueryDocument(schema: GraphQLSchema, document: DocumentNode, target: TargetType) {
   const specifiedRulesToBeRemoved = [NoUnusedFragments];
 
   const rules = [
     NoAnonymousQueries,
     NoTypenameAlias,
     ...(target === 'swift' ? [NoExplicitTypename] : []),
-    ...specifiedRules.filter(rule => specifiedRulesToBeRemoved.includes(rule))
+    ...specifiedRules.filter(rule => specifiedRulesToBeRemoved.includes(rule)),
   ];
 
   const validationErrors = validate(schema, document, rules);
@@ -22,48 +28,48 @@ export function validateQueryDocument(schema, document, target) {
     for (const error of validationErrors) {
       logError(error);
     }
-    throw new ToolError("Validation of GraphQL query document failed");
+    throw new ToolError('Validation of GraphQL query document failed');
   }
 }
 
-export function NoAnonymousQueries(context) {
+export function NoAnonymousQueries(context: Context) {
   return {
-    OperationDefinition(node) {
+    OperationDefinition(node: OperationDefinitionNode) {
       if (!node.name) {
         context.reportError(new GraphQLError(
           'Apollo does not support anonymous operations',
-          [node]
+          [node],
         ));
       }
       return false;
-    }
+    },
   };
 }
 
-export function NoExplicitTypename(context) {
+export function NoExplicitTypename(context: Context) {
   return {
-    Field(node) {
+    Field(node: FieldNode) {
       const fieldName = node.name.value;
-      if (fieldName == "__typename") {
+      if (fieldName === '__typename') {
         context.reportError(new GraphQLError(
           'Apollo inserts __typename automatically when needed, please do not include it explicitly',
-          [node]
+          [node],
         ));
       }
-    }
+    },
   };
 }
 
-export function NoTypenameAlias(context) {
+export function NoTypenameAlias(context: Context) {
   return {
-    Field(node) {
+    Field(node: FieldNode) {
       const aliasName = node.alias && node.alias.value;
-      if (aliasName == "__typename") {
+      if (aliasName === '__typename') {
         context.reportError(new GraphQLError(
           'Apollo needs to be able to insert __typename when needed, please do not use it as an alias',
-          [node]
+          [node],
         ));
       }
-    }
+    },
   };
 }

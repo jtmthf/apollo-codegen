@@ -10,6 +10,23 @@ import { generateSource as generateFlowSource } from './flow';
 
 export type TargetType = 'json' | 'swift' | 'ts' | 'typescript' | 'flow';
 
+interface BaseContext {
+  [x: string]: any;
+  schema: any;
+  operations: any;
+  fragments: any;
+  typesUsed: any[];
+}
+
+export interface Context extends BaseContext {
+  options: {
+    passthroughCustomScalars: boolean;
+    customScalarsPrefix: string;
+    addTypename: string;
+    namespace?: string;
+  };
+}
+
 export default function generate(
   inputPaths: string[],
   schemaPath: string,
@@ -30,7 +47,7 @@ export default function generate(
 
   options.mergeInFieldsFromFragmentSpreads = true;
 
-  const context = compileToIR(schema, document, options);
+  const context: BaseContext = compileToIR(schema, document, options);
   Object.assign(context, options);
 
   let output = '';
@@ -48,6 +65,11 @@ export default function generate(
     case 'swift':
       output = generateSwiftSource(context, options);
       break;
+    default:
+      // Although this error should never occur under normal conditions,
+      // this error throwing means there is likely an issue with the yargs
+      // config.
+      throw new Error(`Unexpected target: "${target}"`);
   }
 
   if (outputPath) {
