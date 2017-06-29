@@ -5,7 +5,7 @@ import {
   GraphQLInputObjectType,
 } from 'graphql';
 
-export default function serializeToJSON(context) {
+export default function serializeToJSON(context: any) {
   return serializeAST({
     operations: Object.values(context.operations),
     fragments: Object.values(context.fragments),
@@ -13,7 +13,7 @@ export default function serializeToJSON(context) {
   }, '\t');
 }
 
-export function serializeAST(ast, space) {
+export function serializeAST(ast: any, space: string) {
   return JSON.stringify(ast, function(key, value) {
     if (isType(value)) {
       return String(value);
@@ -23,7 +23,7 @@ export function serializeAST(ast, space) {
   }, space);
 }
 
-function serializeType(type) {
+function serializeType(type: GraphQLEnumType | GraphQLInputObjectType | GraphQLScalarType) {
   if (type instanceof GraphQLEnumType) {
     return serializeEnumType(type);
   } else if (type instanceof GraphQLInputObjectType) {
@@ -33,7 +33,7 @@ function serializeType(type) {
   }
 }
 
-function serializeEnumType(type) {
+function serializeEnumType(type: GraphQLEnumType) {
   const { name, description } = type;
   const values = type.getValues();
 
@@ -46,13 +46,13 @@ function serializeEnumType(type) {
         name: value.name,
         description: value.description,
         isDeprecated: value.isDeprecated,
-        deprecationReason: value.deprecationReason
+        deprecationReason: value.deprecationReason,
       }
-    ))
-  }
+    )),
+  };
 }
 
-function serializeInputObjectType(type) {
+function serializeInputObjectType(type: GraphQLInputObjectType) {
   const { name, description } = type;
   const fields = Object.values(type.getFields());
 
@@ -60,16 +60,16 @@ function serializeInputObjectType(type) {
     kind: 'InputObjectType',
     name,
     description,
-    fields
-  }
+    fields,
+  };
 }
 
-function serializeScalarType(type) {
+function serializeScalarType(type: GraphQLScalarType) {
   const { name, description } = type;
 
   return {
     kind: 'ScalarType',
     name,
-    description
-  }
+    description,
+  };
 }

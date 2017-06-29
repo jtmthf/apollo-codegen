@@ -6,23 +6,45 @@ import * as path from 'path';
 import * as yargs from 'yargs';
 
 import { downloadSchema, introspectSchema, printSchema, generate } from '.';
-import { ToolError, logError } from './errors'
+import { ToolError, logError } from './errors';
+import { TargetType } from './generate';
 
-import 'source-map-support/register'
+import 'source-map-support/register';
 
 // Make sure unhandled errors in async code are propagated correctly
-process.on('unhandledRejection', (error) => { throw error });
+process.on('unhandledRejection', (error: Error) => { throw error; });
 
 process.on('uncaughtException', handleError);
 
-function handleError(error) {
+function handleError(error: Error) {
   logError(error);
   process.exit(1);
 }
 
+interface IntrospectArgs extends yargs.Argv {
+  schema: string;
+  output: string;
+  header: {
+    [key: string]: string,
+  };
+  insecure?: boolean;
+}
+
+interface Args extends yargs.Argv {
+  schema: string;
+  output?: string;
+  target: TargetType;
+  namespace?: string;
+  'passthrough-custom-scalars': boolean;
+  'custom-scalars-prefix': string;
+  'add-typename': string;
+  input: string[];
+}
+
+// tslint:disable-next-line:no-unused-expression
 yargs
   .command(
-    ['introspect-schema <schema>', 'download-schema'],
+    'introspect-schema <schema>',
     'Generate an introspection JSON from a local GraphQL file or from a remote GraphQL server',
     {
       output: {
@@ -46,15 +68,15 @@ yargs
             additionalHeaders[name] = value;
           }
           return additionalHeaders;
-        }
+        },
       },
       insecure: {
         alias: 'K',
         describe: 'Allows "insecure" SSL connection to the server',
-        type: 'boolean'
-      }
+        type: 'boolean',
+      },
     },
-    async argv => {
+    async (argv: IntrospectArgs) => {
       const { schema, output, header, insecure } = argv;
 
       const urlRegex = /^https?:\/\//i;
@@ -63,10 +85,10 @@ yargs
       } else {
         await introspectSchema(schema, output);
       }
-    }
+    },
   )
   .command(
-    ['print-schema [schema]'],
+    'print-schema [schema]',
     'Print the provided schema in the GraphQL schema language format',
     {
       schema: {
@@ -82,12 +104,12 @@ yargs
         default: 'schema.graphql',
         normalize: true,
         coerce: path.resolve,
-      }
+      },
     },
     async argv => {
       const { schema, output } = argv;
       await printSchema(schema, output);
-    }
+    },
   )
   .command(
     'generate [input...]',
@@ -109,32 +131,32 @@ yargs
         demand: false,
         describe: 'Code generation target language',
         choices: ['swift', 'json', 'ts', 'typescript', 'flow'],
-        default: 'swift'
+        default: 'swift',
       },
       namespace: {
         demand: false,
         describe: 'Optional namespace for generated types [currently Swift-only]',
-        type: 'string'
+        type: 'string',
       },
-      "passthrough-custom-scalars": {
+      'passthrough-custom-scalars': {
         demand: false,
         describe: "Don't attempt to map custom scalars [temporary option]",
-        default: false
+        default: false,
       },
-      "custom-scalars-prefix": {
+      'custom-scalars-prefix': {
         demand: false,
-        describe: "Prefix for custom scalars. (Implies that passthrough-custom-scalars is true if set)",
+        describe: 'Prefix for custom scalars. (Implies that passthrough-custom-scalars is true if set)',
         default: '',
-        normalize: true
+        normalize: true,
       },
-      "add-typename": {
+      'add-typename': {
         demand: false,
-        describe: "Automatically add the __typename field to every selection set",
+        describe: 'Automatically add the __typename field to every selection set',
         default: '',
-        normalize: true
-      }
+        normalize: true,
+      },
     },
-    argv => {
+    (argv: Args) => {
       let { input } = argv;
 
       // Use glob if the user's shell was unable to expand the pattern
@@ -143,15 +165,16 @@ yargs
       }
 
       const inputPaths = input
+        // tslint:disable-next-line:no-shadowed-variable
         .map(input => path.resolve(input))
         // Sort to normalize different glob expansions between different terminals.
         .sort();
 
       const options = {
-        passthroughCustomScalars: argv["passthrough-custom-scalars"] || argv["custom-scalars-prefix"] !== '',
-        customScalarsPrefix: argv["custom-scalars-prefix"] || '',
-        addTypename: argv["add-typename"],
-        namespace: argv.namespace
+        passthroughCustomScalars: argv['passthrough-custom-scalars'] || argv['custom-scalars-prefix'] !== '',
+        customScalarsPrefix: argv['custom-scalars-prefix'] || '',
+        addTypename: argv['add-typename'],
+        namespace: argv.namespace,
       };
 
       generate(inputPaths, argv.schema, argv.output, argv.target, options);
@@ -163,4 +186,4 @@ yargs
   .help()
   .version()
   .strict()
-  .argv
+  .argv;

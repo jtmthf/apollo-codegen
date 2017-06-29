@@ -1,6 +1,4 @@
-import * as path from 'path'
-import * as fs from 'fs'
-import * as mkdirp from 'mkdirp'
+import * as fs from 'fs';
 
 import {
   buildClientSchema,
@@ -8,10 +6,10 @@ import {
   concatAST,
   parse,
   DocumentNode,
-  GraphQLSchema
+  GraphQLSchema,
 } from 'graphql';
 
-import { ToolError, logError } from './errors'
+import { ToolError } from './errors';
 
 export function loadSchema(schemaPath: string): GraphQLSchema {
   if (!fs.existsSync(schemaPath)) {
@@ -27,17 +25,17 @@ export function loadSchema(schemaPath: string): GraphQLSchema {
 
 function extractDocumentFromJavascript(content: string): string | null {
   const re = /gql`([^`]*)`/g;
-  let match
-  const matches = []
+  let match;
+  const matches = [];
 
-  while(match = re.exec(content)) {
+  while (match = re.exec(content)) {
     const doc = match[1]
-      .replace(/\${[^}]*}/g, '')
+      .replace(/\${[^}]*}/g, '');
 
-    matches.push(doc)
+    matches.push(doc);
   }
 
-  const doc = matches.join('\n')
+  const doc = matches.join('\n');
   return doc.length ? doc : null;
 }
 

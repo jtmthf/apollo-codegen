@@ -1,22 +1,21 @@
-import * as fs from 'fs'
+import * as fs from 'fs';
 
-import { ToolError, logError } from './errors'
-import { loadSchema,  loadAndMergeQueryDocuments } from './loading'
-import { validateQueryDocument } from './validation'
-import { compileToIR } from './compilation'
-import serializeToJSON from './serializeToJSON'
-import { generateSource as generateSwiftSource } from './swift'
-import { generateSource as generateTypescriptSource } from './typescript'
-import { generateSource as generateFlowSource } from './flow'
+import { loadSchema,  loadAndMergeQueryDocuments } from './loading';
+import { validateQueryDocument } from './validation';
+import { compileToIR } from './compilation';
+import serializeToJSON from './serializeToJSON';
+import { generateSource as generateSwiftSource } from './swift';
+import { generateSource as generateTypescriptSource } from './typescript';
+import { generateSource as generateFlowSource } from './flow';
 
-type TargetType = 'json' | 'swift' | 'ts' | 'typescript' | 'flow';
+export type TargetType = 'json' | 'swift' | 'ts' | 'typescript' | 'flow';
 
 export default function generate(
   inputPaths: string[],
   schemaPath: string,
-  outputPath: string,
+  outputPath: string | undefined,
   target: TargetType,
-  options: any
+  options: any,
 ) {
   const schema = loadSchema(schemaPath);
 

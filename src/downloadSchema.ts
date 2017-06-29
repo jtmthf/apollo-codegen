@@ -1,26 +1,24 @@
 // Based on https://facebook.github.io/relay/docs/guides-babel-plugin.html#using-other-graphql-implementations
 
-import * as fetch from 'node-fetch';
+import fetch from 'node-fetch';
 import * as fs from 'fs';
-import * as path from 'path';
 import * as https from 'https';
 
 import {
-  buildClientSchema,
   introspectionQuery,
-  printSchema,
 } from 'graphql/utilities';
 
-import { ToolError } from './errors'
+import { ToolError } from './errors';
 
 const defaultHeaders = {
   'Accept': 'application/json',
-  'Content-Type': 'application/json'
+  'Content-Type': 'application/json',
 };
 
-export default async function downloadSchema(url, outputPath, additionalHeaders, insecure) {
+export default async function downloadSchema(url: string, outputPath: string,
+  additionalHeaders: {[key: string]: string}, insecure?: boolean) {
   const headers = Object.assign(defaultHeaders, additionalHeaders);
-  const agent = insecure ? new https.Agent({ rejectUnauthorized: false }) : null;
+  const agent = insecure ? new https.Agent({ rejectUnauthorized: false }) : undefined;
 
   let result;
   try {
