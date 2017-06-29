@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-import glob from 'glob';
-import process from 'process';
-import path from 'path';
-import yargs from 'yargs';
+import * as glob from 'glob';
+import * as process from 'process';
+import * as path from 'path';
+import * as yargs from 'yargs';
 
 import { downloadSchema, introspectSchema, printSchema, generate } from '.';
 import { ToolError, logError } from './errors'
@@ -111,6 +111,11 @@ yargs
         choices: ['swift', 'json', 'ts', 'typescript', 'flow'],
         default: 'swift'
       },
+      namespace: {
+        demand: false,
+        describe: 'Optional namespace for generated types [currently Swift-only]',
+        type: 'string'
+      },
       "passthrough-custom-scalars": {
         demand: false,
         describe: "Don't attempt to map custom scalars [temporary option]",
@@ -124,8 +129,9 @@ yargs
       },
       "add-typename": {
         demand: false,
-        describe: "For non-swift targets, always add the __typename GraphQL introspection type when generating target types",
-        default: false
+        describe: "Automatically add the __typename field to every selection set",
+        default: '',
+        normalize: true
       }
     },
     argv => {
@@ -144,7 +150,8 @@ yargs
       const options = {
         passthroughCustomScalars: argv["passthrough-custom-scalars"] || argv["custom-scalars-prefix"] !== '',
         customScalarsPrefix: argv["custom-scalars-prefix"] || '',
-        addTypename: argv["add-typename"]
+        addTypename: argv["add-typename"],
+        namespace: argv.namespace
       };
 
       generate(inputPaths, argv.schema, argv.output, argv.target, options);

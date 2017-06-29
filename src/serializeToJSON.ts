@@ -16,11 +16,7 @@ export default function serializeToJSON(context) {
 export function serializeAST(ast, space) {
   return JSON.stringify(ast, function(key, value) {
     if (isType(value)) {
-      if (expandTypes) {
-        return serializeType(value);
-      } else {
-        return String(value);
-      }
+      return String(value);
     } else {
       return value;
     }
@@ -46,7 +42,12 @@ function serializeEnumType(type) {
     name,
     description,
     values: values.map(value => (
-      { name: value.name, description: value.description }
+      {
+        name: value.name,
+        description: value.description,
+        isDeprecated: value.isDeprecated,
+        deprecationReason: value.deprecationReason
+      }
     ))
   }
 }

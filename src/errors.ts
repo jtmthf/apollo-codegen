@@ -1,16 +1,17 @@
 import { GraphQLError } from 'graphql';
+import * as path from 'path';
 
 // ToolError is used for errors that are part of the expected flow
 // and for which a stack trace should not be printed
 
-export function ToolError(this: {message: string}, message: string) {
-  this.message = message;
-}
+export class ToolError extends Error {
+  name: string = 'ToolError';
 
-ToolError.prototype = Object.create(Error.prototype, {
-  constructor: { value: ToolError },
-  name: { value: 'ToolError' },
-});
+  constructor(message: string) {
+    super(message);
+    this.message = message;
+  }
+}
 
 const isRunningFromXcodeScript = process.env.XCODE_VERSION_ACTUAL;
 
@@ -42,6 +43,11 @@ export function logErrorMessage(message: string, fileName?: string, lineNumber?:
       console.log(`error: ${message}`);
     }
   } else {
-    console.log(message);
+    if (fileName) {
+      const truncatedFileName = '/' + fileName.split(path.sep).slice(-4).join(path.sep);
+      console.log(`...${truncatedFileName}: ${message}`);
+    } else {
+      console.log(`error: ${message}`);
+    }
   }
 }

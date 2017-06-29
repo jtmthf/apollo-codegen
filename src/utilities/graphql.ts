@@ -1,4 +1,8 @@
 import {
+  visit,
+  visitWithTypeInfo,
+  Kind,
+  TypeInfo,
   isEqualType,
   isAbstractType,
   SchemaMetaFieldDef,
@@ -9,17 +13,53 @@ import {
   GraphQLUnionType,
   GraphQLSchema,
   GraphQLScalarType,
-  GraphQLEnumType,
   GraphQLInputObjectType,
   GraphQLList,
   GraphQLNonNull,
   GraphQLError,
   OperationDefinitionNode,
-  Location,
   ASTNode,
   ValueNode,
   FieldNode,
+  GraphQLEnumType,
+  GraphQLString,
+  GraphQLInt,
+  GraphQLFloat,
+  GraphQLBoolean,
+  GraphQLID,
+  Location,
+  SelectionSetNode,
 } from 'graphql';
+
+const builtInScalarTypes = new Set([GraphQLString, GraphQLInt, GraphQLFloat, GraphQLBoolean, GraphQLID]);
+
+export function isBuiltInScalarType(type: GraphQLScalarType) {
+  return builtInScalarTypes.has(type);
+}
+
+const typenameField = { kind: Kind.FIELD, name: { kind: Kind.NAME, value: '__typename' } };
+
+export function withTypenameFieldAddedWhereNeeded(schema: GraphQLSchema, ast: ASTNode) {
+  function isOperationRootType(type: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType) {
+    return type === schema.getQueryType() ||
+      type === schema.getMutationType() ||
+      type === schema.getSubscriptionType();
+  }
+
+  const typeInfo = new TypeInfo(schema);
+
+  return visit(ast, visitWithTypeInfo(typeInfo, {
+    leave: {
+      SelectionSet: (node: SelectionSetNode) => {
+        const parentType = typeInfo.getParentType();
+
+        if (!isOperationRootType(parentType)) {
+          return { ...node, selections: [typenameField, ...node.selections] };
+        }
+      },
+    },
+  }));
+}
 
 export function sourceAt(location: Location) {
   return location.source.body.slice(location.start, location.end);
